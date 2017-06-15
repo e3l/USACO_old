@@ -26,7 +26,7 @@ public class friday {
 		int startMonth = 0;
 
 		// Weekdays moved ahead per month
-		int wkdaysMvdAhead = 0;
+		int daysMovedAhead = 0;
 
 		// Read "n", which defines what year to stop at
 		int n = Integer.parseInt(in.readLine());
@@ -35,34 +35,36 @@ public class friday {
 		int totalmonths = n * 12;
 
 		// Counts the first jump to the 13th
-		wkdaysMvdAhead = 12 % 7;
-		day += wkdaysMvdAhead;
+		daysMovedAhead = 12;
+		
+		day += daysMovedAhead;
 		day = day % 7;
 
 		frequency[day]++;
+		
 		startMonth++;
 
 		// Find out how many of each days of the week there is for the 13th.
-		for (int x = 0; x < totalmonths - 1; x++) {
+		for (int x = 1; x < totalmonths; x++) {
 			// Check what day 13th is
 			if (startMonth == 2) {
 				// feb
-				if (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0)) {
-					wkdaysMvdAhead = 29 % 7;
+				if (isLeapYear(year)) {
+					daysMovedAhead = 29;
 				} else {
-					wkdaysMvdAhead = 28 % 7;
+					daysMovedAhead = 28;
 				}
 			} else {
 				// long short months
 				if (startMonth == 4 || startMonth == 6 || startMonth == 9 || startMonth == 11) {
-					wkdaysMvdAhead = 30 % 7;
+					daysMovedAhead = 30;
 				} else {
-					wkdaysMvdAhead = 31 % 7;
+					daysMovedAhead = 31;
 				}
 			}
 
 			// Move forward week days (from mon-tues, tues-wed, etc.)
-			day += wkdaysMvdAhead;
+			day += daysMovedAhead;
 			day = day % 7;
 
 			frequency[day]++;
@@ -81,5 +83,13 @@ public class friday {
 
 		in.close();
 		out.close();
+	}
+
+	/**
+	 * @param year
+	 * @return
+	 */
+	static boolean isLeapYear(int year) {
+		return year % 400 == 0 || (year % 100 != 0 && year % 4 == 0);
 	}
 }
