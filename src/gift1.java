@@ -1,0 +1,70 @@
+
+/*
+ID: ethan.w1
+LANG: JAVA
+TASK: gift1
+ */
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
+
+public class gift1 {
+	public static void main(String[] args) throws Exception {
+		BufferedReader in = new BufferedReader(new FileReader("gift1.in"));
+		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("gift1.out")));
+
+		// read the number of names
+		int np = Integer.parseInt(in.readLine());
+		Map<String, Integer> names = new LinkedHashMap();
+
+		// read the names
+		for (int n = 0; n < np; n++) {
+			names.put(in.readLine(), 0);
+		}
+
+		int[] balances = new int[np];
+		int[] gift_count = new int[np];
+		// for each name, create an array of gifted_names, and an array of
+		// gift_amount
+		for (int x = 0; x < np; x++) {
+			String gifter = in.readLine();
+			String[] amount_peoplegifted = new String[2];
+			String a_pg = in.readLine();
+			StringTokenizer st = new StringTokenizer(a_pg);
+			amount_peoplegifted[0] = st.nextToken();
+			amount_peoplegifted[1] = st.nextToken();
+
+			int PEOPLE_GIFTED = Integer.parseInt(amount_peoplegifted[1]);
+
+			if (PEOPLE_GIFTED == 0) {
+			} else {
+				int total_giftamount = Integer.parseInt(amount_peoplegifted[0]);
+				int gift_leftover = total_giftamount % PEOPLE_GIFTED;
+				int gifter_loss = total_giftamount - gift_leftover;
+				int ind_giftamount = gifter_loss / PEOPLE_GIFTED;
+				String[] gifted_names = new String[PEOPLE_GIFTED];
+				names.put(gifter, names.get(gifter)-gifter_loss);
+				for (int y = 0; y < PEOPLE_GIFTED; y++) {
+					gifted_names[y] = in.readLine();
+					names.put(gifted_names[y], names.get(gifted_names[y]) + ind_giftamount);
+//					System.out.println(gifted_names[y] + " got $" + ind_giftamount + " from gifter");
+				}
+			}
+
+		}
+		Map.Entry<String,Integer> entry = names.entrySet().iterator().next();
+		
+		for ( String key : names.keySet() ) {
+		    out.println( key + " " + names.get(key));
+		}
+
+		in.close();
+		out.close();
+	}
+}
