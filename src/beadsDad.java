@@ -14,11 +14,11 @@ import java.io.PrintWriter;
 
 public class beadsDad {
 	public static void main(String args[]) throws IOException {
-		BufferedReader in = new BufferedReader(new FileReader("beads.in"));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("beads.out")));
+		final BufferedReader in = new BufferedReader(new FileReader("beads.in"));
+		final PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("beads.out")));
 
-		int numbeads = Integer.parseInt((in.readLine()));
-		char[] necklace = in.readLine().toCharArray();
+		final int numbeads = Integer.parseInt((in.readLine()));
+		final char[] necklace = in.readLine().toCharArray();
 
 		int maxLength = 0;
 
@@ -26,7 +26,7 @@ public class beadsDad {
 			// iterate through each char at a potential cut point
 			// try counting left and counting right
 			// keep track of the combined score at each char
-			int result = countLeftAndRight(i, necklace, numbeads);
+			final int result = countLeftAndRight(i, necklace, numbeads);
 
 			if (result > maxLength) {
 				maxLength = result;
@@ -43,110 +43,108 @@ public class beadsDad {
 	}
 
 	/////////////////////////
-	// PRIVATE METHODS
+	// CLASS
 	/////////////////////////
-	static int countLeftAndRight(int i, char[] necklace, int numbeads) {
-		int endingIndexRight = walkRight(i, necklace, numbeads);
-		int countRight = countBeads(i, endingIndexRight, numbeads, 1) + 1;
+	static class Result {
+		final int endingIndex;
+		final int count;
 
-		if (countRight == numbeads) {
-			return countRight;
+		Result(final int endingIndex, final int count) {
+			this.endingIndex = endingIndex;
+			this.count = count;
 		}
-		
-		int endingIndexLeft = walkLeft(i, necklace, numbeads, endingIndexRight);
-		int countLeft = countBeads(i, endingIndexLeft, numbeads, -1);
-
-		return countRight + countLeft;
 	}
 
+	static enum Direction {
+		LEFT(-1), RIGHT(1);
+
+		final int value;
+
+		private Direction(final int value) {
+			this.value = value;
+		}
+	}
+
+	/////////////////////////
+	// METHODS
+	/////////////////////////
 	/**
 	 * 
-	 * @param i
+	 * @param startingIndex
 	 *            - the starting index position
 	 * @param necklace
 	 *            - the necklace
 	 * @param numbeads
 	 *            - length of the necklace
-	 * @return the ending index position
+	 * @return a count of the continuous sequence of same color beads
 	 */
-	static int walkRight(int i, char[] necklace, int numbeads) {
-		return walkSameColor(i, necklace, numbeads, 1, i == 0 ? numbeads - 1 : i - 1);
+	static int countLeftAndRight(final int startingIndex, final char[] necklace, final int numbeads) {
+		final Result resultRight = walkSameColor(startingIndex, startingIndex, necklace, numbeads, Direction.RIGHT);
+		final Result resultLeft = walkSameColor(startingIndex, resultRight.endingIndex, necklace, numbeads, Direction.LEFT);
+
+		return resultRight.count + resultLeft.count;
 	}
 
 	/**
 	 * 
-	 * @param i
-	 *            - the starting index position
-	 * @param necklace
-	 *            - the necklace
-	 * @param numbeads
-	 *            - length of the necklace
-	 * @param stopIndex
-	 *            - do not walk beyond this point (to prevent double counting
-	 *            the same beads)
-	 * @return the ending index position
-	 */
-	static int walkLeft(int i, char[] necklace, int numbeads, int stopIndex) {
-		return walkSameColor(i, necklace, numbeads, -1, stopIndex);
-	}
-
-	/**
-	 * 
-	 * @param i
+	 * @param startingIndex
 	 *            - the current index position
-	 * @param startColor
-	 *            - the color of the starting bead for this count
+	 * @param stopIndex
+	 *            - the index *before* which to stop (i.e., the bead at this
+	 *            index is excluded)
 	 * @param necklace
 	 *            - the necklace
 	 * @param numbeads
 	 *            - length of the necklace
 	 * @param direction
 	 *            - which direction to count? left=-1, right=1
-	 * @return the ending index of the continuous sequence of same color beads
+	 * @param startColor
+	 *            - the color of the starting bead for this count
+	 * @return the ending index and a count of the continuous sequence of same
+	 *         color beads
 	 */
-	static int walkSameColor(int i, char[] necklace, int numbeads, int direction, int stopIndex) {
-		int endingIndex = i;
+	static Result walkSameColor(final int startingIndex, final int stopIndex, final char[] necklace, final int numbeads, final Direction direction) {
+		int endingIndex = startingIndex;
+		int count = 0;
 		char sequenceColor = 'w';
-		int j = direction == 1 ? 0 : 1;
-		int atIndex = (i + direction * j + numbeads) % numbeads;
+		
+		// if walking right, start with the current element; if walking left,
+		// start with the previous element
+		int j = direction == Direction.RIGHT ? 0 : 1;
+		int atIndex = (startingIndex + direction.value * j + numbeads) % numbeads;
+
+		// for walking left, stop immediately if we are already on the stop
+		// index
+		if (direction == Direction.LEFT && atIndex == stopIndex) {
+			return new Result(endingIndex, count);
+		}
 
 		// decrement index and count until the color changes
 		do {
-			atIndex = (i + direction * j + numbeads) % numbeads;
-
 			char atBead = necklace[atIndex];
+
+			// if sequence color has not been set or at 'w' or same color,
+			// proceed
 			if (sequenceColor == 'w' || atBead == sequenceColor || atBead == 'w') {
 				// increment count then keep going
 				endingIndex = atIndex;
+				count++;
 
-				// if we started with a 'w' and this is not a 'w' then set this
-				// as the sequence color
+				// if sequence color has not been set and this is not a 'w' then
+				// set it as the sequence color
 				if (sequenceColor == 'w' && atBead != 'w') {
 					sequenceColor = atBead;
 				}
 			} else {
-				// we've reached a different color, stop counting
-				return endingIndex;
+				// we've reached a different color, stop counting and return
+				return new Result(endingIndex, count);
 			}
 
 			j++;
+			atIndex = (startingIndex + direction.value * j + numbeads) % numbeads;
 		} while (atIndex != stopIndex);
 
 		// the entire necklace is the same color
-		return endingIndex;
-	}
-
-	/**
-	 * @param startIndex
-	 * @param endingIndex
-	 * @param numbeads
-	 * @return
-	 */
-	static int countBeads(int startIndex, int endingIndex, int numbeads, int direction) {
-		if (direction == 1) {
-			return (endingIndex + numbeads - startIndex) % numbeads;
-		} else {
-			return startIndex == endingIndex ? numbeads : (startIndex + numbeads - endingIndex) % numbeads;
-		}
+		return new Result(endingIndex, count);
 	}
 }
