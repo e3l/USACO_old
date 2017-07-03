@@ -97,7 +97,7 @@ public class beadsDad {
 	 * @param numbeads
 	 *            - length of the necklace
 	 * @param direction
-	 *            - which direction to count? left=-1, right=1
+	 *            - which direction to count? refer to enum Direction
 	 * @param startColor
 	 *            - the color of the starting bead for this count
 	 * @return the ending index and a count of the continuous sequence of same
@@ -111,7 +111,7 @@ public class beadsDad {
 		// if walking right, start with the current element; if walking left,
 		// start with the previous element
 		int j = direction == Direction.RIGHT ? 0 : 1;
-		int atIndex = (startingIndex + direction.value * j + numbeads) % numbeads;
+		int atIndex = nextIndex(startingIndex, j, direction, numbeads);
 
 		// for walking left, stop immediately if we are already on the stop
 		// index
@@ -119,7 +119,7 @@ public class beadsDad {
 			return new Result(endingIndex, count);
 		}
 
-		// decrement index and count until the color changes
+		// walk index and count until the color changes
 		do {
 			char atBead = necklace[atIndex];
 
@@ -141,10 +141,21 @@ public class beadsDad {
 			}
 
 			j++;
-			atIndex = (startingIndex + direction.value * j + numbeads) % numbeads;
+			atIndex = nextIndex(startingIndex, j, direction, numbeads);
 		} while (atIndex != stopIndex);
 
-		// the entire necklace is the same color
+		// the entire walk is the same color
 		return new Result(endingIndex, count);
+	}
+
+	/**
+	 * @param startingIndex
+	 * @param offset
+	 * @param direction
+	 * @param numbeads
+	 * @return
+	 */
+	private static int nextIndex(final int startingIndex, int offset, final Direction direction, final int numbeads) {
+		return (startingIndex + direction.value * offset + numbeads) % numbeads;
 	}
 }
