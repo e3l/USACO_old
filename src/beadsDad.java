@@ -12,7 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class beads {
+public class beadsDad {
 	public static void main(String args[]) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader("beads.in"));
 		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("beads.out")));
